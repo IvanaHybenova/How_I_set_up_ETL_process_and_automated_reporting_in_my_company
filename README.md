@@ -1,0 +1,2 @@
+# How_I_set_up_ETL_process_and_automated_reporting_in_my_company
+An article about, how I set up ETL process and automatic reporting in my company. It is a step by step guide about how to connect with python to different data sources, write your own package of functions, build your own warehouse, use google data studio and jupyter notebooks for reporting and last, but not least, how to use Airflow to make it all run automatically.
