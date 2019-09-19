@@ -19,6 +19,7 @@ __4. Protecting credentials before pushing code to gitlab__
 __5. Writing own package of functions__  
 __6. Creating a new PostgreSQL database with PgAdmin4__  
 __7. Loading transformed data into the database (warehouse)__  
+__8. Putting it all together (creating update_warehouse function)__
   
   
   
@@ -27,13 +28,13 @@ __7. Loading transformed data into the database (warehouse)__
 First we need to create OAuth2 credentials.
 
 1. Navigate in your browser to [Google APIs Console](https://console.developers.google.com/apis/dashboard?project=testdashboard&angularJsUrl=)  
-2. Click on "TestDashboard" next to Google APIs logo, which will open dialog with all the project. Click on "New Project" on top right corner.
+2. Click on "TestDashboard" next to Google APIs logo, which will open dialog with all the projects you have on your account. Click on "New Project" on top right corner.  
 ![1_create_new project](https://user-images.githubusercontent.com/31499140/65150543-a39a7f80-da24-11e9-9e96-c2b93e38fc35.JPG)
 
 3. Give your project a name and click "Create".
 ![2_Name_the_project](https://user-images.githubusercontent.com/31499140/65150775-1572c900-da25-11e9-97cc-2cee130cbd0c.JPG)
 
-4. Click on "TestDasboard" again and select your project from the list
+4. Click on "TestDasboard" again and select your project from the list.  
 ![3_Open_library](https://user-images.githubusercontent.com/31499140/65151341-3556bc80-da26-11e9-8039-5a447e53b35a.JPG)
 
 5. Click on "ENABLE APIS AND SERVICES"
@@ -145,7 +146,7 @@ cur.close()
 conn.close()
 ```
 
-If you are just starting with the SQL or you are writing a complicated statement, try it rather out somewhere else first (like PgAdmin), because python will not tell you where is an error in it, at least that was my case, it just kind of froze.
+If you are just starting with the SQL or you are writing a complicated statement, try it rather out somewhere else first (like PgAdmin), because python will not tell you where is an error in it, at least that was my case, it just froze.
 
 And that was it, the only pain I had with this was putting data into a data frame, were I had to specify all the columns, so if you are pulling table with 20 columns it can get pretty tedious. If you know how to get the column names from the statement automatically, so I don't have to write them down, please let me know, thank you :)
 
@@ -163,7 +164,7 @@ pip install airtable-python-wrapper
 And now we are ready to pull the table, again into properly formated data frame. 
 Again we are going to use environment variables, instead of hard coding the credentials into the script.
 
-Since Airtable is a database, where multiple tables are connected, I had to deal with fixing the relations. Let's say we have three tables: Customers, Products and Orders. If you download Orders table, in column with Product name you will end up with id of the product instead of its name, and the same for customer name column. Therefore I made sure, that I kept, not just the fields of the table I am downloading but also id of each row, so I could merge the tables later on correctly.
+Since Airtable is a database, where multiple tables are connected, I had to deal with fixing the relations. Let's say we have three tables: Customers, Products and Orders. If you download Orders table, in column with product name you will end up with id of the product instead of its name, and the same for customer name column. Therefore I made sure, that I kept, not just the fields of the table I am downloading but also id of each row, so I could merge the tables later on correctly.
 
 ```python
 import os
@@ -189,7 +190,7 @@ As you can see, I quickly ran into lot of data wrangling issues, which could get
 
 ## 4. Protecting credentials before pushing code to gitlab
 
-As I wrote earlier, you don't want to keep your/company credentials in your code. Even though your code should be safe once you push it on for example gitlab into repository which only certain colleagues have access to, it is a rule not to  push credentials anywhere in the repo. The way we protected our credentials was, that all the values I needed to make the code work, I saved in a group of environemt variables and send the list to my colleagues over the email or Telegram. (Remember that Slack is not encrypted). 
+As I wrote earlier, you don't want to keep your/company credentials in your code. Even though your code should be safe once you push it on for example gitlab into repository which only certain colleagues have access to, it is a rule in many companies not to push credentials nowhere in the repository. The way we protected our credentials was, that all the values I needed to make the code work, I saved in a group of environemt variables and sent the list of them to my colleagues over the email or Telegram. (Remember that Slack is not encrypted). 
 
 ### Setting the environment variable on Windows
 1. In Search, search for and then select: System (Control Panel)
@@ -197,7 +198,7 @@ As I wrote earlier, you don't want to keep your/company credentials in your code
 3. Click Environment Variables. In the section System Variables, click on New.
 4. In a dialog window specify name (for example BASE_API_KEY) and then specify the value, which is the corresponding string.
    Remember not to put in into quotes. It is also good practise to keep the name of the variables uppercase, for Mac users it is even
-   necessery. Then you can just keep a txt file with all the variables and their values, that you will send to your colleagues that 
+   necessery. Then you can just keep a .txt file with all the variables and their values, that you will send to your colleagues that 
    needs to run your scripts or are working on them with you.
 5. Once you add all the environment variables you need close all the windows and restart your computer.
 
@@ -225,7 +226,7 @@ print(my_base_api_key)
 
 ## 5. Writing own package of functions
 
-Before I build the warehouse I had to everytime download the tables from the Airtable and do the preprocessing, which was highly repetitive, extended the code and was uneffective. Solution to that was writing my own package of functions, that I just imported at the beginnig of each script. In my case it was mostly about preprocessing data from the Airtable but you can use it for anything.
+Before I built the warehouse I had to everytime download the tables from the Airtable and do the preprocessing, which was highly repetitive, extended the code and was uneffective. Solution to that was writing my own package of functions, that I just imported at the beginnig of each script. In my case it was mostly about preprocessing data from the Airtable but you can use it for anything.
 
 To start to write your own package you need to write it in a seperate .py script. As an example I will demonstrate three functions.
 
@@ -233,7 +234,7 @@ Before I define them, I write a "help" part. It is very important that you write
 
 
 The first function is for unlisting the column. For some reason everytime I donwloaded the data, the date column was a list with one value, so I had to unlist it. On this function I also demonstrate how to incorporate a check that user is using the function properly and error message, in case condition is not met.  
-The second function we saw already earlier, it is for downloading a table, and preserving the ID of each row. Additionaly I am showing how to add some extra preprocessing steps for particular table and I am already using the first function for unlisting a date column.   
+We saw already the second function earlier, it is for downloading a table and preserving the ID of each row. Additionaly I am showing how to add some extra preprocessing steps for particular table and I am already using the first function for unlisting a date column.   
 The third function is for fixing the relations, so if we continue in our example of three tables - Customers, Products and Orders,
 thanks to this function in Orders table instead of customer ID and product ID we will get customer name and product name.
 
@@ -252,9 +253,9 @@ Products = ra.ReadAirtable('Products')
 # Fixing the relations (having an actual customer name instead of ID etc.)
 Customers, Orders, Products = ra.FixRelations(Customers = Customers, Orders = Orders, Products = Products)
 
-# In case you don't need all for tables
+# In case you don't need to fix relations for all the tables
 # I know that in this example we have only 3 tables, which are quite intuitive, but in reality you can have many more, so you need
-  to have documented, which tables are connected with each other.
+  to document, which tables are connected with each other.
 Customers, Orders, Products = ra.FixRelations(Customers = Customers, Orders = Orders)
 del(Products)  # because these will be returned as None
 # all possible pairs: Customers & Orders, Products & Orders
@@ -311,16 +312,16 @@ def FixRelations(Customers = None, Orders = None, Products = None):
         Orders.drop('Product', axis = 1, inplace = True)
         # Renaming Name column to Product
         Orders.rename(columns={'Name': 'Product'}, inplace = True)
- ```
+```
  
- Now save the script. In this example I named it ReadAirtable_functions.py and saved in a "common" folder in my working directory.
- So next time I will be writing a report were I will need this data I will just do the import and using the functions:
- 
- ```python
- import os
- import ReadAirtable_functions as ra
- 
- help(ra)
+Now save the script. In this example I named it ReadAirtable_functions.py and saved in a "common" folder in my working directory.
+So next time I will be writing a report were I will need this data I will just do the import and use the functions:
+
+```python
+import os
+import ReadAirtable_functions as ra
+
+help(ra)
  
 Customers = ra.ReadAirtable('Customers')
 Orders = ra.ReadAirtable('Orders')
@@ -334,3 +335,163 @@ So I didn't have to define the functions again, nor use huge amount of space to 
 
 
 ## 6. Creating a new PostgreSQL database with PgAdmin4
+
+One of my tasks was to create a warehouse where data from all the sources would be stored. Additionaly there are extra tables with additional calculations, so all the dashboards in Google data studio and reports in jupyter notebook pulls data from there.  
+I was creating a warehouse on an existing server, so the host, user, password was provided, I only add name for the new database.
+First of all you need to design it. I used [drawio.](https://chrome.google.com/webstore/detail/drawio-desktop/pebppomjfocnoigkeepgbmcifnnlndla?hl=en-GB) to do that.    
+The idea behind the warehouse is to store data in a simple way, so it is not necessary to use complex select statements where analyzing the data. Therefor you might want to go for dimensional database model instead of relational one. Probably you will be adding new tables as you will be doing more calculations on your data, but that is ok. Just keep updating the documentation accordingly, it will help a lot when you will be explaining your colleagues how to look for what they need in the warehouse.
+One way or the other, somebody from the IT department will create server for you. Then you can use for example PgAdmin to connect to it. 
+
+1. Open PgAdmin, right click on "Servers", then "Create" and "Server" wich will open a dialog window.
+![1 connectServer](https://user-images.githubusercontent.com/31499140/65269631-e1c59b00-db19-11e9-9379-a4728d72f509.JPG)
+
+
+2. On the General tab fill in the name, on the Connection tab fill in the host, username and password - all this information should   
+   provide your IT department. Then click save.
+
+3. Then on the left a new server name will appear. Click on "plus" next to it and right click on databases, then select "create" and "database". 
+![2 createDatabase](https://user-images.githubusercontent.com/31499140/65269873-513b8a80-db1a-11e9-95a0-9b16d40340ca.JPG)
+
+4. All you need to fill out is Database field, which will be the name of your database. I used "warehouse" in my example. Click save.
+![3 createDatabase2](https://user-images.githubusercontent.com/31499140/65270306-2d2c7900-db1b-11e9-8fb0-56e22159b4ff.JPG)
+
+Now you are ready to save the data into your database though Python.
+
+## 7. Loading transformed data into the database (warehouse)
+
+I am saving data into the PostgresSQL database through sqlalchemy package. There is no need for preprocessing the data once they are in a dataframe, just keep in mind that table and column names should be lowercase without space, for example customers_orders.
+
+So let's say we want to save our three dataframes from the example: Orders, Products and Customers.
+
+First package installation.
+```python
+pip install sqlalchemy
+```
+
+Make sure to create a new environment variable for your warehouse for create_engine function. The format is like this:
+WAREHOUSE_ENGINE = postgresql+psycopg2://username:password@host:port/database_name
+
+And now you need to add this into your script:
+```python
+from sqlalchemy import create_engine 
+
+# creating the connection
+# again, we are using environment variable instead of hardcoding the link.
+engine_link = os.environ['WAREHOUSE_ENGINE']
+engine = create_engine(engine_link)
+
+# This will create new tables in your database, and replace the existing ones.
+# use if_exists='append' to just add new rows
+# notice that table names are lowercase now, to avoid problems when saving into the warehouse
+Customers.to_sql('customers', engine, if_exists='replace',index=False)  
+Products.to_sql('products', engine, if_exists='replace',index=False) 
+Orders.to_sql('orders', engine, if_exists='replace',index=False) 
+
+# closing the connection
+engine.dispose()
+```
+
+That's it. All you need to do now is to right click on your database in PgAdmin, refresh it and all your tables will appear there, so you can double check, that all the data were saved properly.
+
+## 8. Putting it all together (creating update_warehouse function)
+
+With this knowledge you are ready to put together the main script with function that will do all the work. It is important to create a function with all the steps of ETL process in case you will want to run it automatically with Airflow.
+
+So in case you have an extra script with your own functions for preprocessing the data your main script can look for example like this:
+
+```python
+import os
+import pandas as pd
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+import psycopg2
+from sqlalchemy import create_engine
+from common import ReadAirtable_functions as ra # make sure to have proper working directory set
+
+# defining some additional function that creates a new dataframe for example, which will be called from within the main function
+def SomeAdditionalFunction(dataframe1, dataframe2)
+    # extra code to transform the data
+return dataframe3
+
+# defining the main function, that does the whole ETL process
+def update_warehouse():
+
+  '''Pulling Google Sheet data'''
+  # use credentails to create a client to interact with the Google Drive API
+  scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
+  # make sure to set the proper path to the .json file, if it is not your working directory
+  credentials = ServiceAccountCredentials.from_json_keyfile_name('client_secret.json', scope)
+  client = gspread.authorize(credentials)
+
+  # Find a workbook by name and open the sheet you need
+  # Make sure you don't misspell the name of the workbook and sheet.
+  sheet = client.open("Example").sheet1
+  invoices = pd.DataFrame(sheet.get_all_records())
+
+  '''Pulling Airtable data'''  
+  Customers = ra.ReadAirtable('Customers')
+  Orders = ra.ReadAirtable('Orders')
+  Products = ra.ReadAirtable('Products')
+
+  # Fixing the relations (having an actual customer name instead of ID etc.)
+  Customers, Orders, Products = ra.FixRelations(Customers = Customers, Orders = Orders, Products = Products)
+  
+  '''Pulling PostgreSQL data'''
+  # getting the credentials from the environment variables
+  host = os.environ['HOST_DATABASE']
+  database = os.environ['NAME_DATABASE']
+  user = os.environ['USER_DATABASE']
+  password = os.environ['PASSWORD_DATABASE']
+
+  conn = psycopg2.connect(host = host, database = database, user = user, password = password)
+
+  # creates a new cursor used to execute SELECT statements
+  cur = conn.cursor()
+
+  # use regular SELECT statement to pull the data you want
+  postgreSQL_select_Query = """
+                            SELECT *
+                            from orders_items
+                          """
+  # quering the data
+  cur.execute(postgreSQL_select_Query)
+  data = cur.fetchall() 
+
+  # puting data into a dataframe
+  orders_items = pd.DataFrame.from_records(data, columns = ['date', 'customer', 'product', 'quantity'])
+
+  # closing the connection
+  cur.close()
+  conn.close()
+  
+  # creating table with extra calculations
+  customers_history = SomeAdditionalFunction(customers, orders_items)
+  
+  '''Saving the data into the warehouse'''
+  # creating the connection
+  engine_link = os.environ['WAREHOUSE_ENGINE']
+  engine = create_engine(engine_link)
+
+  # notice that table names are lowercase now, to avoid problems when saving into the warehouse
+  Customers.to_sql('customers', engine, if_exists='replace',index=False)  
+  Products.to_sql('products', engine, if_exists='replace',index=False) 
+  Orders.to_sql('orders', engine, if_exists='replace',index=False) 
+  orders_items.to_sql('orders_items', engine, if_exists='replace',index=False) 
+  customers_history.to_sql('customers_history', engine, if_exists='replace',index=False) 
+  
+
+  # closing the connection
+  engine.dispose()
+  
+  return 'Warehouse has been updated!'
+  
+# commented out call of the function, for easy run if needed
+# update_warehouse()
+```
+
+Congratulations! You have just set up your first ETL process. Your secrets are safe, so you can push it in your teams gitlab. We pulled data from the Google sheets, Airtable and PostgreSQL database, we used functions from our own package, transformed data with extra function and saved it into the database you designed yourself!
+
+In the next part of the article we will see how to pull data from your warehouse into Google Data Studio, set up the Airflow server in a docker so the IT department can right away put it on a production server and define tasks we want to run, while one of it will be jupyter notebook report sent on regular basis by email to your colleagues!
+
+### References:
+https://medium.com/row-and-table/an-basic-intro-to-the-airtable-api-9ef978bb0729
