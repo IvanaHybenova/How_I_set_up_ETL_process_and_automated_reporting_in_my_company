@@ -79,6 +79,7 @@ pip install gspread oauth2client
 ```
 
 Once you have the packages installed you can pull the data into Python and get them in properly formated dataframe.
+Set your working directory to the folder where you have the .json file or adjust the file path when setting credentials variable accordingly.
 
 ```python
 import pandas as pd
@@ -151,7 +152,7 @@ And that was it, the only pain I had with this was putting data into a data fram
 ## 3. Pulling data from the Airtable
 
 To be able to pull data from Airtable you need to find the base key and api key. You will find out how to do it, for example
-[in this article](https://medium.com/row-and-table/an-basic-intro-to-the-airtable-api-9ef978bb0729)
+[in this article.](https://medium.com/row-and-table/an-basic-intro-to-the-airtable-api-9ef978bb0729)
 
 Then we can move into the coding part. Just make sure you install airtable python wrapper.
 
@@ -169,8 +170,10 @@ import os
 import pandas as pd
 from airtable import Airtable
 
-# pay attention to how I am using os.environ to call the environment variable from my computer, instead of hard coding the value
-airtable = Airtable(base_key = os.environ['AIRTABLE_BASE_KEY'], api_key=os.environ['AIRTABLE_API_KEY'], table_name = 'your_table_name')
+# pay attention to how I am using os.environ to call the environment variable from my computer, instead 
+# of hard coding the value
+airtable = Airtable(base_key = os.environ['AIRTABLE_BASE_KEY'], api_key=os.environ['AIRTABLE_API_KEY'], 
+                               table_name = 'your_table_name')
 airtable = airtable.get_all() 
 airtable_df = pd.DataFrame.from_records(airtable)
 # getting the fields with the data of the table
@@ -185,3 +188,149 @@ airtable.rename(columns={'ID': 'your_table_name + string}, inplace = True)
 As you can see, I quickly ran into lot of data wrangling issues, which could get super messy and extend the main code, which wasn't necessary. Instead I took advice from my boss and wrote my own package with my own functions, that helped me to preprocess data from the airtable. I will show you how to do that, but let's take a look at how we set those environment variables first :)
 
 ## 4. Protecting credentials before pushing code to gitlab
+
+As I wrote earlier, you don't want to keep your/company credentials in your code. Even though your code should be safe once you push it on for example gitlab into repository which only certain colleagues have access to, it is a rule not to  push credentials anywhere in the repo. The way we protected our credentials was, that all the values I needed to make the code work, I saved in a group of environemt variables and send the list to my colleagues over the email or Telegram. (Remember that Slack is not encrypted). 
+
+### Setting the environment variable on Windows
+1. In Search, search for and then select: System (Control Panel)
+2. Click the Advanced system settings link.
+3. Click Environment Variables. In the section System Variables, click on New.
+4. In a dialog window specify name (for example BASE_API_KEY) and then specify the value, which is the corresponding string.
+   Remember not to put in into quotes. It is also good practise to keep the name of the variables uppercase, for Mac users it is even
+   necessery. Then you can just keep a txt file with all the variables and their values, that you will send to your colleagues that 
+   needs to run your scripts or are working on them with you.
+5. Once you add all the environment variables you need close all the windows and restart your computer.
+
+### Setting the environment variable on Mac
+1. Open your command line and write:  open ~/.bash_profile
+2. Once your .bash_profile file is open, write there down all the variables and values you need. Remember to use names with upper case. 
+   For example BASE_API_KEY=keyd{skhsfe. Close the file.  
+   Be careful! It happend with one of my values that contained special character that the letters after the character were not loaded.
+   If you encounter the same thing you can put the value into single quotes, so you will end up with BASE_API_KEY='keyd{skhsfe'
+3. In your command line write: source ~/.bash_profile
+4. Reopen the terminal and try out that variables were set properly. Write for example echo $BASE_API_KEY and in the output you should
+   get the value, you set for this variable. 
+
+Thanks to source command, you don't need to restart your computer, the variables are already available. Just remember that they are 
+available for the programs that starts from the terminal, for me it meant that even though I used to run the jupyter notebook and spyder from anaconda navigator, now I had to launch them directly from the command line.
+
+From now on anytime you will need these values in your code, you will get them through os package.   
+For example:
+```python
+import os
+
+my_base_api_key = os.environ['BASE_API_KEY']
+print(my_base_api_key)
+```
+
+## 5. Writing own package of functions
+
+Before I build the warehouse I had to everytime download the tables from the Airtable and do the preprocessing, which was highly repetitive, extended the code and was uneffective. Solution to that was writing my own package of functions, that I just imported at the beginnig of each script. In my case it was mostly about preprocessing data from the Airtable but you can use it for anything.
+
+To start to write your own package you need to write it in a seperate .py script. As an example I will demonstrate three functions.
+
+Before I define them, I write a "help" part. It is very important that you write this part, since even though you are maybe the only one using these functions right now, it may not be this way always, or you might just forget how you designed them.
+
+
+The first function is for unlisting the column. For some reason everytime I donwloaded the data, the date column was a list with one value, so I had to unlist it. On this function I also demonstrate how to incorporate a check that user is using the function properly and error message, in case condition is not met.  
+The second function we saw already earlier, it is for downloading a table, and preserving the ID of each row. Additionaly I am showing how to add some extra preprocessing steps for particular table and I am already using the first function for unlisting a date column.   
+The third function is for fixing the relations, so if we continue in our example of three tables - Customers, Products and Orders,
+thanks to this function in Orders table instead of customer ID and product ID we will get customer name and product name.
+
+```python
+
+"""
+Example of usage:
+
+from common import ReadAirtable_functions as ra
+
+# Reading in the Tables
+Customers = ra.ReadAirtable('Customers') # Only active customers are downloaded
+Orders = ra.ReadAirtable('Orders') # Only orders with filled out date are downloaded, and date column is already unlisted.
+Products = ra.ReadAirtable('Products')
+
+# Fixing the relations (having an actual customer name instead of ID etc.)
+Customers, Orders, Products = ra.FixRelations(Customers = Customers, Orders = Orders, Products = Products)
+
+# In case you don't need all for tables
+# I know that in this example we have only 3 tables, which are quite intuitive, but in reality you can have many more, so you need
+  to have documented, which tables are connected with each other.
+Customers, Orders, Products = ra.FixRelations(Customers = Customers, Orders = Orders)
+del(Products)  # because these will be returned as None
+# all possible pairs: Customers & Orders, Products & Orders
+"""
+
+# function for unlisting the column
+def UnlistColumn(dataframe, column):
+    if type(airtable[column][0]) == list:
+        for index, row in dataframe.iterrows():
+            dataframe[column][index]= dataframe[column][index][0]   
+        return dataframe
+    else:
+        print('ERROR: Cannot apply UnlistColumn function on "' + column + '" column. It is not a list.')
+
+# function for pulling the data and preprocessing
+# I added here also some other steps like filtering rows that were not ready yet, unlisting date column etc., you can add if statement 
+# as in example
+def ReadAirtable( base_key = os.environ['AIRTABLE_BASE_KEY'], api_key = os.environ['AIRTABLE_API_KEY'], table_name):
+    airtable = Airtable(base_key = base_key, api_key=api_key, table_name = table_name)
+    airtable = airtable.get_all() 
+    airtable_df = pd.DataFrame.from_records(airtable)
+    airtable = pd.DataFrame.from_records(airtable_df['fields'])
+    airtable['ID'] = airtable_df['id']
+    string = 'ID'
+    airtable.rename(columns={'ID': table_name + string}, inplace = True)
+    
+    if table_name == 'customers':
+        airtable = airtable[airtable['active_customer'] == True].copy()
+     
+    if table_name == 'orders':
+        airtable = airtable[airtable['Date'].notnull()].copy()
+        airtable = UnlistColumn(airtable, 'Date') 
+        
+    
+# function for getting actuall name instead of IDs.
+# use Customers & Orders to get customer name into Orders table through customer ID
+# use Products & Orders to get product name into Orduers through Product ID
+# use all three of them, to fix them all
+def FixRelations(Customers = None, Orders = None, Products = None):
+    # Getting customer name into Orders table through customer ID
+    if (Customers is not None) and (Orders is not None):
+        Orders = (pd.merge(Orders, Customers[['Name', 'CustomersID']], left_on = 'Customer', right_on = 'CustomersID', 
+                     how = 'left').drop('CustomersID', axis = 1))
+        # Dropping Customer column with the IDs
+        Orders.drop('Customer', axis = 1, inplace = True)
+        # Renaming Name column to Customer
+        Orders.rename(columns={'Name': 'Customer'}, inplace = True)
+    
+    # Getting product name into Orders through product ID
+    if (Orders is not None) and (Products is not None):
+        Orders = (pd.merge(Orders, Products[['Name', 'ProductsID']], left_on = 'Product', right_on = 'ProductsID', 
+                     how = 'left').drop('ProductsID', axis = 1))
+        # Dropping Product column with the IDs
+        Orders.drop('Product', axis = 1, inplace = True)
+        # Renaming Name column to Product
+        Orders.rename(columns={'Name': 'Product'}, inplace = True)
+ ```
+ 
+ Now save the script. In this example I named it ReadAirtable_functions.py and saved in a "common" folder in my working directory.
+ So next time I will be writing a report were I will need this data I will just do the import and using the functions:
+ 
+ ```python
+ import os
+ import ReadAirtable_functions as ra
+ 
+ help(ra)
+ 
+Customers = ra.ReadAirtable('Customers')
+Orders = ra.ReadAirtable('Orders')
+Products = ra.ReadAirtable('Products')
+
+# Fixing the relations (having an actual customer name instead of ID etc.)
+Customers, Orders, Products = ra.FixRelations(Customers = Customers, Orders = Orders, Products = Products)
+```
+
+So I didn't have to define the functions again, nor use huge amount of space to preprocess the data. Notice, that environment variables are specified directly in a script with the functions. We had only one Airtable database, so this way it was more convinient. If you are working with multiple Airtable databases you will have to adjust the function, so that airtable base key and airtable api key is specified when calling the function.
+
+
+## 6. Creating a new PostgreSQL database with PgAdmin4
