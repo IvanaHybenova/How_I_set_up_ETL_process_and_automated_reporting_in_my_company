@@ -119,10 +119,10 @@ import pandas as pd
 import psycopg2
 
 # now getting the credentials from the environment variables
-host = os.environ['HOST_WAREHOUSE_DATABASE']
-database = os.environ['NAME_WAREHOUSE_DATABASE']
-user = os.environ['USER_WAREHOUSE_DATABASE']
-password = os.environ['PASSWORD_WAREHOUSE_DATABASE']
+host = os.environ['HOST_DATABASE']
+database = os.environ['NAME_DATABASE']
+user = os.environ['USER_DATABASE']
+password = os.environ['PASSWORD_DATABASE']
 
 conn = psycopg2.connect(host = host,database = database, user = user, password = password)
 
