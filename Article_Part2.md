@@ -119,7 +119,7 @@ default_args = {
         'retry_delay': dt.timedelta(minutes = 2)}
         
 ```
-Here comes the body of the DAG. The most headache will come from schedule_interval argument, especially if you need to run the dag for example each 15. day of the month at 2AM. To get some idea see the [documentation](https://airflow.apache.org/scheduler.html) and this [stack overflow discussion](https://stackoverflow.com/questions/35668852/how-to-configure-airflow-dag-to-run-at-specific-time-on-daily-basis)
+Here comes the body of the DAG. The most headache will come from schedule_interval argument, especially if you need to run the dag for example each 15. day of the month at 2AM. Remember, that Airflow is using UTC timezone. To get some idea see the [documentation](https://airflow.apache.org/scheduler.html) and this [stack overflow discussion](https://stackoverflow.com/questions/35668852/how-to-configure-airflow-dag-to-run-at-specific-time-on-daily-basis)
 
 We will set this DAG with etl process every day.
 
