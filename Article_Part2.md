@@ -337,7 +337,7 @@ There are many other things you can set in the configuration file and many of th
 
 The only thing left now is fixing docker-compose.ymal file, so all the secret environment variables will be properly set and safe.
 
-## 7. Fixing docker-compose.ymal file
+## 7. Fixing docker-compose.yml file
 
 
 
