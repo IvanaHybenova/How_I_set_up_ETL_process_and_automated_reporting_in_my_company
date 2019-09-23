@@ -18,7 +18,7 @@ __3. Writing your first DAG with tasks__
 __4. Pulling base docker image for Airflow server__  
 __5. Fixing dockerfile__  
 __6. Fixing airflow configuration file__  
-__7. Fixing docker-compose.ymal file__  
+__7. Fixing docker-compose.yml file__  
 __8. Handing it all over to IT department__
 
 
