@@ -331,7 +331,7 @@ smtp_port = 587
 smtp_mail_from = your_airflow_email@example.com
 ```
 
-The your_airflow_email@example.com is an email account you need to create, for example on gmail.com. $SMTP_PASSWORD will be set in docker-compose.ymal file as it is a secret password to that email account.
+The your_airflow_email@example.com is an email account you need to create, for example on gmail.com. $SMTP_PASSWORD will be set in docker-compose.yml file as it is a secret password to that email account.
 
 There are many other things you can set in the configuration file and many of them are pretty intuitive, if you don't understand something, you will be for sure able to google it.
 
