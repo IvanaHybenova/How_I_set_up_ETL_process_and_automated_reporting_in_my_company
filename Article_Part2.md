@@ -1,6 +1,6 @@
-# How I set up ETL process and automated reporting in my company (using Python) - part 2  (in progress)
+# How I set up ETL process and automated reporting in my company (using Python) - part 2 
 
-In first part of the article I showed you how I put data from all the sources together and a simple example of a script that saved
+In the first part of the article I showed you how I put data from all the sources together and a simple example of a script that saved
 the gathered and transformed data to a new database (warehouse). The ultimate goal is to use Airflow to make the script run automatically
 every night, so the data in the warehouse are still up to date.
 
@@ -18,8 +18,9 @@ __3. Writing your first DAG with tasks__
 __4. Pulling base docker image for Airflow server__  
 __5. Fixing dockerfile__  
 __6. Fixing airflow configuration file__  
-__7. Fixing docker-compose.yml file__  
-__8. Handing it all over to IT department__
+__7. Fixing entrypoint.sh file__  
+__8. Fixing docker-compose.yml file__  
+__9. Handing it all over to IT department__
 
 
 ## 1. Pulling data from postgreSQL into Google data studio
@@ -265,7 +266,6 @@ ENV NAME_DATABASE="database_name"
 ENV USER_DATABASE="user_name"
 
 # In docker-compose.ymal file:
-# ENV WAREHOUSE_ENGINE
 # ENV PASSWORD_DATABASE
 # ENV AIRTABLE_BASE_KEY
 # ENV AIRTABLE_API_KEY
@@ -335,11 +335,45 @@ The your_airflow_email@example.com is an email account you need to create, for e
 
 There are many other things you can set in the configuration file and many of them are pretty intuitive, if you don't understand something, you will be for sure able to google it.
 
-The only thing left now is fixing docker-compose.ymal file, so all the secret environment variables will be properly set and safe.
+## 7. Fixing entrypoint.sh file
 
-## 7. Fixing docker-compose.yml file
+Since we decided to work with .template files, we need to add extra steps in docker/airflow/script/__entrypoint.sh__ file. We will copy the templates, rename them and replace the environment variables with their values. These steps can be added for example in line 73 after defining the Airflow environemnt variables:
+
+![6 FixingEntrypoint](https://user-images.githubusercontent.com/31499140/65452072-bce66600-de40-11e9-93ce-0ca97de185e9.JPG)
 
 
+The only thing left now is fixing docker-compose.yml file, so all the secret environment variables will be properly set and safe.
+
+## 8. Fixing docker-compose.yml file
+
+Docker-compose.yml file can't go under version control, since here defined all the environment variables with their secrets. Open the file with your text editor, we will do some changes:
+
+1. In line 35 is specified name of the image of your docker container, you probably don't want to call it airflow_tutorial:latest but something like your_company-airflow:latest. Just remember the name and use it when you will be building the image.
+
+2. In line 45 add all the environment variables we are missing. Remember that we have kept the list of them in the comments in the Dockerfile, so you can just copy them from there and fill in their values. Sticking to our example:
+
+![7 FixingDockercomposeFile](https://user-images.githubusercontent.com/31499140/65453776-29af2f80-de44-11e9-9742-2120fd90bac4.JPG)
+
+3. Because we decided to build the new image everytime there is a change in the DAGs and we have added a COPY command to copy the dags 
+   folder into our image in the Dockerfile, we here comment out this command (line 64).
+
+## 9. Handing it all over to IT department
+
+At this point was my job done. I pushed all the files except docker-compose.yml file to our repository to gitlab, where my colleague from IT department had access to. Docker-compose.yml file has to be sent for example via email or Telegram, since it contains the secrets. 
+
+Yeah, one more thing. It a is good practise to put useful commands into Readme.md file :)
+
+```
+# Build with:  
+docker build -t your_company-airflow:latest .  
+
+# Run with:  
+docker-compose up  
+
+# airflow webserver is running on 8080 port
+```
+
+That was it! I really hope that this article will help you on your journey of setting up ETL process and automation of other processes. If you have ideas how to improve something and would like to discuss it, don't hesitate to contact me on [LinkedIn.](https://www.linkedin.com/in/ivana-hybenova/)
 
 ### References
 http://michal.karzynski.pl/blog/2017/03/19/developing-workflows-with-apache-airflow/  
