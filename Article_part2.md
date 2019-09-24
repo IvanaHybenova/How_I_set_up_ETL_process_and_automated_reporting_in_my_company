@@ -255,8 +255,8 @@ The first change is line 44, I like to add vim, to be able easily check log file
 so add these two after locales:  
 ![4 fixingDocker1](https://user-images.githubusercontent.com/31499140/65352271-86afa900-dbea-11e9-9d0a-cfaf46675ecc.JPG)
 
-Right before "# Adding installation of custom requirements" we will add section with environment variables. Some of the variables are not that secret, but in case they will change it is easier to change them in Dockerfile only, then looking for them in all the scripts you will ever write. So the environment variables that are not that secret will be defined here, and those that are secret, like passwords etc. will be written in docker-compose.ymal file (this docker-compose.ymal file will never be pushed to gitlab after we fix it).  
-I like to keep noted in dockerfile list of environment variables that are specified in docker-compose.ymal file, so the next section looks like this for our example of warehouse_update function from previous part of the article:
+Right before "# Adding installation of custom requirements" we will add section with environment variables. Some of the variables are not that secret, but in case they will change it is easier to change them in Dockerfile only, then looking for them in all the scripts you will ever write. So the environment variables that are not that secret will be defined here, and those that are secret, like passwords etc. will be written in docker-compose.yml file (this docker-compose.yml file will never be pushed to gitlab after we fix it).  
+I like to keep noted in dockerfile list of environment variables that are specified in docker-compose.yml file, so the next section looks like this for our example of warehouse_update function from previous part of the article:
 
 ```
 # Company variables
