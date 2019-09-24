@@ -156,7 +156,7 @@ success_notification_operator = EmailOperator (
 warehouse_operator >> success_notification_operator
 ```
 
-I will name the second DAG monthly_reports_DAG.py and it will look very similar. We will just add two more libraries and we assume that in our common folder is alongside with the scripts also notebook folder with jupyter notebook named monthly_sales_report.ipynb. The exact folder structer will be presented later on, so you will get the whole picture, don't worry. The idea behind this, is to convert the notebook into an .html file, while skipping the code. So only the markdown sections and outputs will be visible for in the .html file, which makes it a great way of automated reporting.
+I will name the second DAG monthly_reports_DAG.py and it will look very similar. We will just add two more libraries and we assume that in our common folder is alongside with the scripts also notebook folder with jupyter notebook named monthly_sales_report.ipynb. The exact folder structer will be presented later on, so you will get the whole picture, don't worry. The idea behind this, is to convert the notebook into an .html file, while skipping the code. So only the markdown sections and outputs will be visible in the .html file, which makes it a great way of automated reporting.
 
 Another thing I wanted to show you in this example is picking up the files in your docker. We will take advantage of AIRFLOW_HOME environment variable, because its value is a path. Thanks to that and Path function from pathlib package we can get to any file in the docker container we need. I will get back to this, once we will be talking about the folder structure, now just follow along, please.
 
