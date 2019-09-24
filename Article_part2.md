@@ -220,7 +220,7 @@ Wow, that was piece of work, right? :) But there is still long way ahead to make
 ## 4. Pulling base docker image for Airflow server
 
 As a starting point I used this [Airflow tutorial.](https://gosmarten.com/airflow.html)
-As the tutorial states, the first step is to clone the repository with the whole set up of dockerfile, airflow configuration file, compose.ymal file, etc. But I have also kept the whole folder structer as is in the repository. Once you are more comfortable and familiar with the configuration file, don't hasitate to come up with your own folder structure and adjust the files accordingly. 
+As the tutorial states, the first step is to clone the repository with the whole set up of dockerfile, airflow configuration file, compose.yml file, etc. But I have also kept the whole folder structer as is in the repository. Once you are more comfortable and familiar with the configuration file, don't hasitate to come up with your own folder structure and adjust the files accordingly. 
 We will do some little changes though.
 
 ```python
