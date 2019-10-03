@@ -2,7 +2,8 @@
 
 When I started my second data analyst position, I was challenged by a task I have never done before - creating a dashboard 
 in Google Data Studio and make sure, it is all the time up-to-date. Yeah, and one more thing - the data are in three different sources, 
-so it would be nice to build a warehouse first, that would be again, all the time up-to-date :)
+so it would be nice to build a warehouse first, that would be again, all the time up-to-date :)  
+For automating the whole process my boss picked Airflow, which is a workflow management system.
 
 Once I have learnt more about Airflow I set myself one more goal - reports written in Jupyter notebooks, automatically sent by email on regular basis, but I will save this for later.
 
@@ -52,7 +53,7 @@ First we need to create OAuth2 credentials.
 9. Fill in the form accordingly and press the button below.
 ![7 CreateCredentials2](https://user-images.githubusercontent.com/31499140/65226101-946c0e00-dac6-11e9-9ee3-85fd895ed1f1.JPG)
 
-10. Fill in your service account name and give a role project editor. Double check the key type is JSON and click "Continue".
+10. Fill in your service account name and give a role project editor, by Select Role > Project > Editor. Double check the key type is   JSON and click "Continue".
 ![9 CreateCredentials3](https://user-images.githubusercontent.com/31499140/65226498-3ee43100-dac7-11e9-93ee-906235d15137.JPG)
 
 11. Save the JSON file into your code folder and rename it to "client_secret.json"
